@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cold Bath Ice Calculator</title>
+    <style>
+      :root {
+        --bg-color: #2c3e50; /* Dark Slate Blue */
+        --surface-color: #34495e; /* Wet Asphalt */
+        --primary-color: #3498db; /* Peter River Blue */
+        --primary-hover-color: #2980b9; /* Belize Hole Blue */
+        --text-color: #ecf0f1; /* Clouds White */
+        --input-bg-color: #2c3e50;
+        --input-border-color: #566573;
+        --label-color: #bdc3c7; /* Silver */
+        --error-color: #e74c3c; /* Alizarin Crimson */
+        --success-color: #2ecc71; /* Emerald Green */
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Align to top for scroll */
+        min-height: 100vh;
+      }
+
+      .container {
+        background-color: var(--surface-color);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 500px;
+      }
+
+      h1 {
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 1.8em;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--label-color);
+        font-weight: 500;
+      }
+
+      input[type="number"] {
+        width: calc(100% - 22px); /* Account for padding and border */
+        padding: 12px;
+        border: 1px solid var(--input-border-color);
+        border-radius: 6px;
+        background-color: var(--input-bg-color);
+        color: var(--text-color);
+        font-size: 1em;
+      }
+
+      input[type="number"]:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+      }
+
+      /* Toggle Switch CSS */
+      .unit-switcher {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+
+      .unit-switcher span {
+        margin: 0 10px;
+        font-size: 0.9em;
+        color: var(--label-color);
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #555; /* Off state */
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: var(--primary-color); /* On state */
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      button {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-weight: bold;
+        width: 100%;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: var(--primary-hover-color);
+      }
+
+      #resultLabel {
+        margin-top: 30px;
+        padding: 15px;
+        background-color: var(--input-bg-color);
+        border-radius: 6px;
+        border-left: 5px solid var(--primary-color);
+        white-space: pre-wrap; /* Preserve newlines */
+        line-height: 1.6;
+        font-size: 0.95em;
+      }
+
+      #resultLabel.error {
+        border-left-color: var(--error-color);
+        color: var(--error-color);
+      }
+      #resultLabel.success {
+        border-left-color: var(--success-color);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Cold Bath Ice Calculator</h1>
+
+      <div class="unit-switcher">
+        <span id="metricLabelDisplay">Metric</span>
+        <label class="switch">
+          <input type="checkbox" id="unitSwitch" />
+          <span class="slider round"></span>
+        </label>
+        <span id="imperialLabelDisplay">Imperial</span>
+      </div>
+
+      <form id="iceBathForm">
+        <div class="form-group">
+          <label for="tankVolume" id="tankVolumeLabel"
+            >Max Tank Capacity (gallons):</label
+          >
+          <input type="number" id="tankVolume" step="any" required />
+        </div>
+
+        <div class="form-group">
+          <label for="startTemp" id="startTempLabel"
+            >Starting Water Temperature (°F):</label
+          >
+          <input type="number" id="startTemp" step="any" required />
+        </div>
+
+        <div class="form-group">
+          <label for="desiredTemp" id="desiredTempLabel"
+            >Desired Water Temperature (°F):</label
+          >
+          <input type="number" id="desiredTemp" step="any" required />
+        </div>
+
+        <div class="form-group">
+          <label for="personWeight" id="personWeightLabel"
+            >Person's Weight (lbs):</label
+          >
+          <input type="number" id="personWeight" step="any" required />
+        </div>
+
+        <button type="button" id="calculateButton">
+          Calculate Ice Requirements
+        </button>
+      </form>
+
+      <div id="resultLabel">Results will appear here</div>
+    </div>
+
+    <script>
+      // DOM Elements
+      const unitSwitch = document.getElementById("unitSwitch");
+      const tankVolumeInput = document.getElementById("tankVolume");
+      const startTempInput = document.getElementById("startTemp");
+      const desiredTempInput = document.getElementById("desiredTemp");
+      const personWeightInput = document.getElementById("personWeight");
+
+      const tankVolumeLabel = document.getElementById("tankVolumeLabel");
+      const startTempLabel = document.getElementById("startTempLabel");
+      const desiredTempLabel = document.getElementById("desiredTempLabel");
+      const personWeightLabel = document.getElementById("personWeightLabel");
+
+      const metricLabelDisplay = document.getElementById("metricLabelDisplay");
+      const imperialLabelDisplay = document.getElementById(
+        "imperialLabelDisplay"
+      );
+
+      const calculateButton = document.getElementById("calculateButton");
+      const resultLabel = document.getElementById("resultLabel");
+
+      let useMetric = false; // Default to Imperial (switch unchecked)
+
+      // Constants from Python script
+      const DEN_WATER_KG_PER_M3 = 997.0;
+      const CP_WATER_J_PER_KG_C = 4.1955 * 1000.0;
+      const HF_WATER_J_PER_KG = 333.55 * 1000.0;
+      const DEN_HUMAN_KG_PER_M3_RATIO = 0.985; // Ratio to water density
+
+      function updateLabels() {
+        useMetric = unitSwitch.checked; // true if Metric, false if Imperial
+
+        if (useMetric) {
+          tankVolumeLabel.textContent = "Max Tank Capacity (liters):";
+          startTempLabel.textContent = "Starting Water Temperature (°C):";
+          desiredTempLabel.textContent = "Desired Water Temperature (°C):";
+          personWeightLabel.textContent = "Person's Weight (kg):";
+          metricLabelDisplay.style.fontWeight = "bold";
+          metricLabelDisplay.style.color = "var(--text-color)";
+          imperialLabelDisplay.style.fontWeight = "normal";
+          imperialLabelDisplay.style.color = "var(--label-color)";
+        } else {
+          tankVolumeLabel.textContent = "Max Tank Capacity (gallons):";
+          startTempLabel.textContent = "Starting Water Temperature (°F):";
+          desiredTempLabel.textContent = "Desired Water Temperature (°F):";
+          personWeightLabel.textContent = "Person's Weight (lbs):";
+          imperialLabelDisplay.style.fontWeight = "bold";
+          imperialLabelDisplay.style.color = "var(--text-color)";
+          metricLabelDisplay.style.fontWeight = "normal";
+          metricLabelDisplay.style.color = "var(--label-color)";
+        }
+        // Clear previous results and input values on unit change for clarity
+        resultLabel.textContent = "Results will appear here";
+        resultLabel.className = "";
+        // tankVolumeInput.value = '';
+        // startTempInput.value = '';
+        // desiredTempInput.value = '';
+        // personWeightInput.value = '';
+      }
+
+      function calculateIce() {
+        resultLabel.className = ""; // Reset result style
+        try {
+          const tankVolumeVal = parseFloat(tankVolumeInput.value);
+          const startTempVal = parseFloat(startTempInput.value);
+          const desiredTempVal = parseFloat(desiredTempInput.value);
+          const personWeightVal = parseFloat(personWeightInput.value);
+
+          if (
+            isNaN(tankVolumeVal) ||
+            isNaN(startTempVal) ||
+            isNaN(desiredTempVal) ||
+            isNaN(personWeightVal)
+          ) {
+            throw new Error("Please enter valid numbers in all fields.");
+          }
+          if (tankVolumeVal <= 0 || personWeightVal <= 0) {
+            throw new Error(
+              "Tank volume and person's weight must be positive."
+            );
+          }
+          if (startTempVal <= desiredTempVal && useMetric) {
+            throw new Error(
+              "Starting temperature must be higher than desired temperature."
+            );
+          }
+          if (
+            startTempVal <= desiredTempVal &&
+            !useMetric &&
+            ((startTempVal - 32) * 5) / 9 <= ((desiredTempVal - 32) * 5) / 9
+          ) {
+            throw new Error(
+              "Starting temperature must be higher than desired temperature."
+            );
+          }
+
+          let tankVolumeLiters, startTempC, desiredTempC, personWeightKg;
+
+          if (useMetric) {
+            tankVolumeLiters = tankVolumeVal;
+            startTempC = startTempVal;
+            desiredTempC = desiredTempVal;
+            personWeightKg = personWeightVal;
+          } else {
+            // Imperial
+            tankVolumeLiters = tankVolumeVal * 3.78541; // Gallons to liters
+            startTempC = ((startTempVal - 32) * 5) / 9; // Fahrenheit to Celsius
+            desiredTempC = ((desiredTempVal - 32) * 5) / 9; // Fahrenheit to Celsius
+            personWeightKg = personWeightVal * 0.45359237; // lbs to kg
+          }
+
+          const T_ice_C = 0.0;
+          const den_human_kg_per_m3 =
+            DEN_HUMAN_KG_PER_M3_RATIO * DEN_WATER_KG_PER_M3;
+
+          // Calculate volumes and mass
+          let vol_human_liters = personWeightKg / (den_human_kg_per_m3 / 1000); // kg / (kg/L) -> L
+          // Note: Original python had den_human_kg_per_m3 and then divided by 1000 for vol_tank_net_liters.
+          // person_weight / den_human_kg_per_m3 (kg / kg/m^3 = m^3) then *1000 for liters
+          // OR person_weight / (den_human_kg_per_m3/1000) for kg / (kg/L) -> L. I'll use the latter.
+          // Python: vol_human_liters = person_weight / den_human_kg_per_m3  (This gives m^3)
+          // For consistency, if person_weight is kg, den_human_kg_per_m3 is kg/m^3, then result is m^3.
+          // To get liters, multiply by 1000.
+          // So, vol_human_m3 = personWeightKg / den_human_kg_per_m3;
+          // vol_human_liters = vol_human_m3 * 1000;
+          // This seems more correct according to units. Let's re-evaluate:
+          // person_weight (kg) / density_human (kg/m^3) = volume_human (m^3)
+          // To convert m^3 to liters, multiply by 1000.
+          // Python: vol_human_liters = person_weight / den_human_kg_per_m3
+          // This was an error in my python interpretation. It should be:
+          // vol_human_m3 = person_weight_kg / den_human_kg_per_m3
+          // vol_human_liters_displaced = vol_human_m3 * 1000
+
+          // Corrected volume displacement:
+          const vol_human_m3_displaced = personWeightKg / den_human_kg_per_m3;
+          const vol_human_liters_displaced = vol_human_m3_displaced * 1000;
+
+          let vol_tank_net_liters =
+            tankVolumeLiters - vol_human_liters_displaced;
+
+          if (vol_tank_net_liters <= 0) {
+            throw new Error(
+              "Person's volume exceeds or equals tank capacity. Reduce water or use a larger tank."
+            );
+          }
+
+          const m_tank_net_kg =
+            (vol_tank_net_liters / 1000) * DEN_WATER_KG_PER_M3; // Convert net liters to m^3 for mass calc
+
+          // Energy calculations
+          let m_ice_kg =
+            (m_tank_net_kg *
+              CP_WATER_J_PER_KG_C *
+              (startTempC - desiredTempC)) /
+            (HF_WATER_J_PER_KG +
+              CP_WATER_J_PER_KG_C * (desiredTempC - T_ice_C));
+
+          if (m_ice_kg < 0) m_ice_kg = 0; // Cannot require negative ice
+
+          let resultText;
+          if (useMetric) {
+            resultText =
+              `Ice required: ${m_ice_kg.toFixed(2)} kg\n` +
+              `Net water volume needed (with person): ${vol_tank_net_liters.toFixed(
+                2
+              )} liters\n` +
+              `Total weight (water + person): ${(
+                m_tank_net_kg + personWeightKg
+              ).toFixed(2)} kg`;
+          } else {
+            // Imperial
+            const ice_required_lbs = m_ice_kg * 2.20462;
+            const vol_tank_net_gallons = vol_tank_net_liters / 3.78541;
+            const total_weight_lbs = (m_tank_net_kg + personWeightKg) * 2.20462;
+
+            resultText =
+              `Ice required: ${ice_required_lbs.toFixed(2)} lbs\n` +
+              `Net water volume needed (with person): ${vol_tank_net_gallons.toFixed(
+                2
+              )} gallons\n` +
+              `Total weight (water + person): ${total_weight_lbs.toFixed(
+                2
+              )} lbs`;
+          }
+          resultLabel.textContent = resultText;
+          resultLabel.className = "success";
+        } catch (e) {
+          resultLabel.textContent = "Error: " + e.message;
+          resultLabel.className = "error";
+        }
+      }
+
+      // Event Listeners
+      unitSwitch.addEventListener("change", updateLabels);
+      calculateButton.addEventListener("click", calculateIce);
+
+      // Initial setup
+      updateLabels(); // Set initial labels based on default switch state
+    </script>
+  </body>
+</html>
