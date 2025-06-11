@@ -1,5 +1,7 @@
 # Cold Bath Ice Calculator
 
+<img src="https://github.com/user-attachments/assets/d3833d25-d641-4f74-bf19-934f94a4f0bb" width="450">
+
 Estimates the amount of ice needed to cool a bath to a desired temperature, considering tank size, water temperature, and user weight.
 
 ## Features
