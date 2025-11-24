@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Cold Bath calculator</title>
+    <meta
+      name="description"
+      content="Advanced calculator for cold plunge thermodynamics, displacement, maintenance load, and costs."
+    />
+    <style>
+      :root {
+        --bg-main: #0f172a;
+        --bg-card: #1e293b;
+        --bg-input: #020617;
+        --accent: #0ea5e9;
+        --accent-glow: rgba(14, 165, 233, 0.3);
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --border: #334155;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --radius: 12px;
+        --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+        outline: none;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          Roboto, sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-primary);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .app-container {
+        background-color: var(--bg-card);
+        width: 100%;
+        max-width: 550px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        animation: fadeIn 0.4s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      header {
+        background: linear-gradient(to bottom, #1e293b, #182233);
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .header-subtitle {
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        margin-top: 4px;
+      }
+
+      .unit-toggle {
+        display: flex;
+        align-items: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        background: var(--bg-input);
+        padding: 4px 8px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 36px;
+        height: 20px;
+        margin: 0 8px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #475569;
+        transition: 0.3s;
+        border-radius: 20px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: var(--accent);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(16px);
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        background: var(--bg-main);
+        padding: 4px;
+        margin: 20px 24px 0 24px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+
+      .tab {
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        transition: all 0.2s;
+      }
+
+      .tab:hover {
+        color: var(--text-primary);
+      }
+
+      .tab.active {
+        background-color: var(--bg-card);
+        color: var(--accent);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .content-area {
+        padding: 24px;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .form-group {
+        position: relative;
+        margin-bottom: 16px;
+      }
+
+      .form-group.last {
+        margin-bottom: 0;
+      }
+
+      .label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+
+      .tooltip {
+        position: relative;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 16px;
+        height: 16px;
+        background: var(--border);
+        color: var(--text-secondary);
+        border-radius: 50%;
+        font-size: 0.7rem;
+        cursor: help;
+      }
+
+      .tooltip:hover {
+        background: var(--accent);
+        color: white;
+      }
+
+      .tooltip:before {
+        content: attr(data-tip);
+        position: absolute;
+        bottom: 140%;
+        right: -10px;
+        width: 220px;
+        padding: 10px;
+        background: #000;
+        color: #fff;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        border-radius: 6px;
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.2s;
+        pointer-events: none;
+        z-index: 10;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        font-weight: 400;
+        text-align: left;
+      }
+
+      .tooltip:after {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        right: 4px;
+        border: 6px solid transparent;
+        border-top-color: #000;
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.2s;
+      }
+
+      .tooltip:hover:before,
+      .tooltip:hover:after {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      select,
+      input {
+        width: 100%;
+        background-color: var(--bg-input);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      select:focus,
+      input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-glow);
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 10px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-primary:hover {
+        background-color: #0284c7;
+        transform: translateY(-1px);
+      }
+
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+
+      #results-panel {
+        background: rgba(0, 0, 0, 0.3);
+        border-top: 1px solid var(--border);
+        padding: 24px;
+        display: none;
+      }
+
+      .result-card {
+        background: rgba(255, 255, 255, 0.04);
+        border-left: 4px solid var(--accent);
+        border-radius: 6px;
+        padding: 16px;
+        margin-bottom: 12px;
+      }
+
+      .result-title {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .result-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+      }
+
+      .result-sub {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: 4px;
+      }
+
+      .highlight {
+        color: var(--accent);
+      }
+
+      .success {
+        color: var(--success);
+      }
+
+      .alert {
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin-top: 16px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .alert-danger {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #fca5a5;
+      }
+
+      .alert-warning {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        color: #fcd34d;
+      }
+
+      .info-card {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-radius: 8px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid var(--border);
+        font-size: 0.8rem;
+        line-height: 1.5;
+      }
+
+      .info-title {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+      }
+
+      .info-note {
+        margin-top: 8px;
+        color: var(--text-secondary);
+      }
+
+      .expert-toggle-row {
+        margin-top: 18px;
+        margin-bottom: 6px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .expert-toggle-row input {
+        width: auto;
+        margin: 0;
+      }
+
+      .expert-toggle-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      [data-mode="ice"] .mode-chiller {
+        display: none;
+      }
+
+      [data-mode="chiller"] .mode-ice {
+        display: none;
+      }
+
+      @media (max-width: 640px) {
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body data-mode="ice">
+    <div class="app-container">
+      <header>
+        <div class="header-left">
+          <h1 title="Approximate thermodynamics, displacement, and energy cost model"><span>❄️</span> Cold Bath calculator</h1>
+        </div>
+        <div class="unit-toggle" aria-label="Toggle units">
+          <span>IMP</span>
+          <label class="switch">
+            <input type="checkbox" id="unit-switch" />
+            <span class="slider"></span>
+          </label>
+          <span>MET</span>
+        </div>
+      </header>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchMode('ice')">Ice Method</div>
+        <div class="tab" onclick="switchMode('chiller')">Chiller Unit</div>
+      </div>
+
+      <div class="content-area">
+        <!-- Input validation alert -->
+        <div id="alert-input" class="alert alert-danger hidden">
+          <span
+            >⚠️ <strong>Check inputs</strong><br /><span id="msg-input"></span
+          ></span>
+        </div>
+
+        <form id="calc-form" novalidate>
+          <!-- Section 1: Vessel & Water -->
+          <div class="grid-2">
+            <div class="form-group">
+              <div class="label-row">
+                <label for="preset">Vessel Type</label>
+              </div>
+              <select id="preset">
+                <option value="custom">Custom Size</option>
+                <option value="bathtub">Bathtub (40 gal)</option>
+                <option value="stock100">Stock Tank (100 gal)</option>
+                <option value="stock150">Stock Tank (150 gal)</option>
+                <option value="barrel">Whiskey Barrel (50 gal)</option>
+                <option value="pod">Portable Pod (80 gal)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <div class="label-row">
+                <label for="tank-cap">Max Capacity <span class="u-vol"></span></label>
+                <div
+                  class="tooltip"
+                  data-tip="Approximate total volume of the container if filled to the brim. Used only for overflow checks; you can leave this empty if you do not care about spillage."
+                >
+                  ?
+                </div>
+              </div>
+              <input
+                type="number"
+                id="tank-cap"
+                step="0.1"
+                min="0"
+                placeholder="e.g. 100"
+              />
+            </div>
+          </div>
+
+          <!-- Section 2: Person -->
+          <div class="grid-2">
+            <div class="form-group">
+              <div class="label-row">
+                <label for="weight">Your Weight <span class="u-weight"></span></label>
+                <div
+                  class="tooltip"
+                  data-tip="Used to estimate how much water your body displaces. Volume = mass / density; composition shifts density slightly."
+                >
+                  ?
+                </div>
+              </div>
+              <input
+                type="number"
+                id="weight"
+                step="0.1"
+                min="1"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <div class="label-row">
+                <label for="body-type">Body Composition</label>
+                <div
+                  class="tooltip"
+                  data-tip="Fat-free tissue is denser than fat. This shifts how much volume you occupy in the water by a few percent."
+                >
+                  ?
+                </div>
+              </div>
+              <select id="body-type">
+                <option value="lean">Athletic (More muscle)</option>
+                <option value="avg" selected>Average</option>
+                <option value="soft">Higher Body Fat</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label for="immersion">Immersion level</label>
+              <div
+                class="tooltip"
+                data-tip="Only the submerged part of you displaces water. Choose what you realistically plan: waist, chest, or full immersion."
+              >
+                ?
+              </div>
+            </div>
+            <select id="immersion">
+              <option value="0.5">Roughly waist deep</option>
+              <option value="0.75" selected>Up to chest/shoulders</option>
+              <option value="1.0">Full body (head under)</option>
+            </select>
+          </div>
+
+          <!-- Section 3: Water Status -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="curr-water"
+                >Current Water Level <span class="u-vol"></span></label
+              >
+              <div
+                class="tooltip"
+                data-tip="How much water is in the tub right now, before adding ice or getting in."
+              >
+                ?
+              </div>
+            </div>
+            <input
+              type="number"
+              id="curr-water"
+              step="0.1"
+              min="1"
+              required
+            />
+          </div>
+
+          <!-- Section 4: Temperatures -->
+          <div class="grid-2">
+            <div class="form-group">
+              <div class="label-row">
+                <label for="temp-start">Start Temp <span class="u-temp"></span></label>
+              </div>
+              <input
+                type="number"
+                id="temp-start"
+                step="0.1"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <div class="label-row">
+                <label for="temp-target"
+                  >Target Temp <span class="u-temp"></span></label
+                >
+                <div
+                  class="tooltip"
+                  data-tip="Many cold-water immersion studies for recovery use about 10–15 °C (50–59 °F) for short exposures in healthy adults. Colder water is a stronger stimulus."
+                >
+                  ?
+                </div>
+              </div>
+              <input
+                type="number"
+                id="temp-target"
+                step="0.1"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Ambient -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="temp-ambient">Ambient Air Temp <span class="u-temp"></span></label>
+              <div
+                class="tooltip"
+                data-tip="Used to estimate passive heat gain. If the air is hot, the chiller works harder to maintain temperature."
+              >
+                ?
+              </div>
+            </div>
+            <input
+              type="number"
+              id="temp-ambient"
+              step="0.1"
+              value="72"
+            />
+          </div>
+
+          <!-- MODE: ICE -->
+          <div class="mode-ice">
+            <div class="form-group">
+              <div class="label-row">
+                <label for="bag-size">Ice Bag Size <span class="u-weight"></span></label>
+                <div
+                  class="tooltip"
+                  data-tip="Weight of a single bag of ice from your store (7, 10, or 20 lb are common). Model assumes ice is around 0 °C when added."
+                >
+                  ?
+                </div>
+              </div>
+              <input
+                type="number"
+                id="bag-size"
+                step="0.1"
+                min="0.1"
+                value="10"
+              />
+            </div>
+          </div>
+
+          <!-- MODE: CHILLER -->
+          <div class="mode-chiller">
+            <div class="grid-2">
+              <div class="form-group">
+                <div class="label-row">
+                  <label for="hp">Chiller Power</label>
+                  <div
+                    class="tooltip"
+                    data-tip="Select the rated horsepower of your chiller. Cooling capacity uses typical BTU/hr from common plunge / aquarium chillers."
+                  >
+                    ?
+                  </div>
+                </div>
+                <select id="hp">
+                  <option value="0.1">1/10 HP</option>
+                  <option value="0.25">1/4 HP</option>
+                  <option value="0.5" selected>1/2 HP (Std)</option>
+                  <option value="1.0">1 HP (Pro)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <div class="label-row">
+                  <label for="insulation">Insulation</label>
+                  <div
+                    class="tooltip"
+                    data-tip="Poor = thin plastic/stock tank in warm air. Standard = reasonable walls + cover. High = well insulated tub with lid, minimal sun/wind."
+                  >
+                    ?
+                  </div>
+                </div>
+                <select id="insulation">
+                  <option value="poor">None/Poor</option>
+                  <option value="decent">Standard</option>
+                  <option value="good" selected>High (Cooler-style)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group last">
+              <div class="label-row">
+                <label for="cost-kwh">Energy Cost ($/kWh)</label>
+              </div>
+              <input
+                type="number"
+                id="cost-kwh"
+                step="0.01"
+                min="0"
+                value="0.16"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-action">
+            Calculate Requirements
+          </button>
+        </form>
+
+        <!-- Expert mode -->
+        <div class="expert-toggle-row">
+          <label class="expert-toggle-label">
+            <input type="checkbox" id="expert-toggle" />
+            <span>Expert mode: show raw physics details</span>
+          </label>
+        </div>
+        <div id="expert-panel" class="info-card hidden">
+          <div class="info-title">Expert details</div>
+          <div id="expert-content"></div>
+        </div>
+
+      </div>
+
+      <!-- RESULTS -->
+      <div id="results-panel">
+        <!-- Overflow Alert -->
+        <div id="alert-overflow" class="alert alert-danger hidden">
+          <span
+            >⚠️ <strong>Overflow risk</strong><br /><span id="msg-overflow"></span
+          ></span>
+        </div>
+
+        <!-- Ice Results -->
+        <div class="mode-ice">
+          <div class="result-card">
+            <div class="result-title">Ice required</div>
+            <div class="result-value">
+              <span id="val-ice-weight">--</span>
+              <span
+                class="u-weight"
+                style="font-size: 1rem; color: var(--text-secondary)"
+              ></span>
+            </div>
+            <div class="result-sub">
+              Approx <strong class="highlight" id="val-bags">--</strong> bags
+              needed (thermodynamic estimate before re-warming when you get in).
+            </div>
+          </div>
+        </div>
+
+        <!-- Chiller Results -->
+        <div class="mode-chiller">
+          <div class="result-card">
+            <div class="result-title">Estimated cooling time</div>
+            <div class="result-value highlight" id="val-time">--</div>
+            <div class="result-sub">
+              Best-case (zero heat gain). Real time will be longer.
+            </div>
+          </div>
+          <div class="grid-2" style="margin-bottom: 0">
+            <div class="result-card" style="margin-bottom: 0">
+              <div class="result-title">Estimated energy cost</div>
+              <div class="result-value success" id="val-cost">--</div>
+            </div>
+            <div class="result-card" style="margin-bottom: 0">
+              <div class="result-title">Electrical load</div>
+              <div
+                class="result-value"
+                style="font-size: 1.2rem"
+                id="val-watts"
+              >
+                --
+              </div>
+              <div class="result-sub">Approximate chiller draw (watts)</div>
+            </div>
+          </div>
+          <div
+            id="alert-underpowered"
+            class="alert alert-warning hidden"
+          >
+            <span
+              >?? <strong>Maintenance Warning</strong><br />
+              <span id="msg-underpowered"></span></span
+            >
+
+          </div>
+        </div>
+
+        <!-- Safety / context -->
+        <div class="info-card">
+          <div class="info-title">Protocol context from published work</div>
+          <div id="safety-text">
+            Enter a target temperature to see typical protocol ranges described
+            in the literature.
+          </div>
+          <div class="info-note">
+            Model assumes well-mixed water with constant properties and ignores
+            tub and body heat capacity. Many cold-water immersion studies are
+            done in controlled settings with screened, generally healthy adults,
+            so responses in other situations can differ.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      /* --- CONSTANTS (SI) --- */
+      const CONST = {
+        // Thermodynamic constants for fresh water / ice
+        shWater: 4181, // J/(kg·°C)
+        lhIce: 333500, // J/kg latent heat of fusion at 0 °C
+        dWater: 1.0, // kg/L
+        dIce: 0.917, // kg/L
+
+        // Human density bands for displacement (kg/L)
+        dHuman: {
+          lean: 1.06,
+          avg: 0.985,
+          soft: 0.92,
+        },
+
+        // Conversions
+        galToL: 3.78541,
+        lbsToKg: 0.453592,
+        BTU_TO_WATT: 0.29307107,
+
+        // Typical chiller specs (approx)
+        chillers: {
+          "0.1": { btu: 1000, watts: 190 },
+          "0.25": { btu: 2800, watts: 460 },
+          "0.5": { btu: 3400, watts: 520 },
+          "1.0": { btu: 8000, watts: 1100 },
+        },
+
+        // Approximate overall heat transfer coefficients (W/m²·K)
+        uValues: {
+          poor: 10.0,
+          decent: 3.5,
+          good: 0.8,
+        },
+
+        minTargetC: 0.5,
+      };
+
+      // Presets with approximate surface areas (m²) for maintenance load
+      const PRESETS = {
+        bathtub: { gal: 40, l: 151, sa: 2.5 },
+        stock100: { gal: 100, l: 378, sa: 4.8 },
+        stock150: { gal: 150, l: 568, sa: 6.2 },
+        barrel: { gal: 50, l: 189, sa: 2.2 },
+        pod: { gal: 80, l: 302, sa: 2.8 },
+      };
+
+      let STATE = { mode: "ice", metric: false, lastMode: null, lastCtx: null };
+
+      const UI = {
+        body: document.body,
+        switch: document.getElementById("unit-switch"),
+        tabs: document.querySelectorAll(".tab"),
+        form: document.getElementById("calc-form"),
+        preset: document.getElementById("preset"),
+        panel: document.getElementById("results-panel"),
+        btn: document.getElementById("btn-action"),
+
+        // Labels
+        lVol: document.querySelectorAll(".u-vol"),
+        lTemp: document.querySelectorAll(".u-temp"),
+        lWeight: document.querySelectorAll(".u-weight"),
+
+        // Inputs
+        iCap: document.getElementById("tank-cap"),
+        iCurr: document.getElementById("curr-water"),
+        iWeight: document.getElementById("weight"),
+        iBody: document.getElementById("body-type"),
+        iImmersion: document.getElementById("immersion"),
+        iStart: document.getElementById("temp-start"),
+        iTarget: document.getElementById("temp-target"),
+        iAmb: document.getElementById("temp-ambient"),
+        iBag: document.getElementById("bag-size"),
+        iHp: document.getElementById("hp"),
+        iIns: document.getElementById("insulation"),
+        iCost: document.getElementById("cost-kwh"),
+
+        // Outputs
+        oIceW: document.getElementById("val-ice-weight"),
+        oBags: document.getElementById("val-bags"),
+        oTime: document.getElementById("val-time"),
+        oCost: document.getElementById("val-cost"),
+        oWatts: document.getElementById("val-watts"),
+
+        // Alerts
+        aOverflow: document.getElementById("alert-overflow"),
+        msgOverflow: document.getElementById("msg-overflow"),
+        aPower: document.getElementById("alert-underpowered"),
+        msgPower: document.getElementById("msg-underpowered"),
+        aInput: document.getElementById("alert-input"),
+        msgInput: document.getElementById("msg-input"),
+
+        // Safety text
+        safety: document.getElementById("safety-text"),
+
+        // Expert mode
+        expertToggle: document.getElementById("expert-toggle"),
+        expertPanel: document.getElementById("expert-panel"),
+        expertContent: document.getElementById("expert-content"),
+      };
+
+      function init() {
+        UI.switch.addEventListener("change", toggleUnits);
+        UI.preset.addEventListener("change", applyPreset);
+        UI.form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          calculate();
+        });
+        if (UI.expertToggle) {
+          UI.expertToggle.addEventListener("change", () => {
+            if (!UI.expertToggle.checked) {
+              UI.expertPanel.classList.add("hidden");
+            } else if (STATE.lastCtx && STATE.lastMode) {
+              updateExpertPanel(STATE.lastMode, STATE.lastCtx);
+            }
+          });
+        }
+        updateLabels();
+      }
+
+      window.switchMode = function (mode) {
+        STATE.mode = mode;
+        UI.body.setAttribute("data-mode", mode);
+        UI.tabs.forEach((t) => t.classList.remove("active"));
+        UI.tabs[mode === "ice" ? 0 : 1].classList.add("active");
+        UI.btn.textContent =
+          mode === "ice" ? "Calculate Ice Plan" : "Calculate Cooling Plan";
+        UI.panel.style.display = "none";
+        if (UI.safety) {
+          UI.safety.textContent =
+            "Enter a target temperature to see typical protocol ranges described in the literature.";
+        }
+      };
+
+      function toggleUnits() {
+        STATE.metric = UI.switch.checked;
+        updateLabels();
+        convertInputs();
+        UI.panel.style.display = "none";
+      }
+
+      function updateLabels() {
+        const txt = (nodes, text) =>
+          nodes.forEach((e) => {
+            e.textContent = text;
+          });
+        txt(UI.lVol, STATE.metric ? "(L)" : "(gal)");
+        txt(UI.lTemp, STATE.metric ? "(°C)" : "(°F)");
+        txt(UI.lWeight, STATE.metric ? "(kg)" : "(lbs)");
+      }
+
+      function applyPreset(e) {
+        const p = PRESETS[e.target.value];
+        if (!p) return;
+        const cap = STATE.metric ? p.l : p.gal;
+        UI.iCap.value = cap;
+        UI.iCurr.value = (cap * 0.7).toFixed(1);
+      }
+
+      function showInputError(message) {
+        UI.msgInput.textContent = message;
+        UI.aInput.classList.remove("hidden");
+      }
+
+      function clearErrors() {
+        UI.aInput.classList.add("hidden");
+        UI.aOverflow.classList.add("hidden");
+        UI.aPower.classList.add("hidden");
+        if (UI.expertPanel) {
+          UI.expertPanel.classList.add("hidden");
+        }
+      }
+
+      function buildSafetyMessage(targetC) {
+        if (!Number.isFinite(targetC)) {
+          return "Enter a target water temperature to see typical protocol ranges and how they relate to published cold-water immersion studies.";
+        }
+
+        let msg = "";
+        if (targetC >= 20) {
+          msg =
+            "Water at or above ~20 °C (68 °F) is cool but not classic cold-water immersion. Many recovery protocols in the literature use 10–15 °C (50–59 °F) for short exposures.";
+        } else if (targetC >= 15) {
+          msg =
+            "Around 15–20 °C (59–68 °F) is a relatively mild cold stress compared with typical cold-immersion studies, which often go cooler for a stronger stimulus.";
+        } else if (targetC >= 10) {
+          msg =
+            "Around 10–15 °C (50–59 °F) is the range most often reported for post-exercise cold-water immersion in healthy adults, with exposure times on the order of minutes rather than hours.";
+        } else if (targetC >= 5) {
+          msg =
+            "Around 5–10 °C (41–50 °F) is very cold for whole-body immersion. Papers in this range describe stronger cold-shock and cardiovascular load, especially in people without prior acclimation.";
+        } else {
+          msg =
+            "Below ~5 °C (41 °F) water is an extreme cold-immersion environment. Open-water and experimental data in this range emphasize rapid cooling of extremities and increased risk of loss of muscle function if exposure is prolonged.";
+        }
+
+        msg +=
+          " Experimental work notes that sudden immersion in water below about 15 °C can provoke a strong 'cold shock' response with rapid breathing and cardiovascular changes, especially in unacclimated people.";
+
+        return msg;
+      }
+
+      function calculate() {
+        clearErrors();
+
+        const d = getNormalizedData();
+        if (!d) {
+          showInputError(
+            "Fill in at least weight, current water volume, and both temperatures with positive numbers."
+          );
+          return;
+        }
+
+        if (!Number.isFinite(d.targetC)) {
+          showInputError("Enter a valid target temperature.");
+          return;
+        }
+
+        if (d.targetC < CONST.minTargetC) {
+          showInputError(
+            "Target temperature is below the freezing point of fresh water. This model assumes liquid water without added salts."
+          );
+          return;
+        }
+
+        const deltaT = d.startC - d.targetC;
+        if (deltaT <= 0) {
+          showInputError(
+            "Target temperature must be lower than the start temperature."
+          );
+          return;
+        }
+
+        // Body displacement (only submerged fraction)
+        const bodyDensity = CONST.dHuman[d.bodyType] || CONST.dHuman.avg;
+        const bodyVolL = (d.weightKg / bodyDensity) * d.immersion;
+
+        // Cooling energy required (J) to cool existing water volume
+        const waterMassKg = d.currL * CONST.dWater;
+        const energyJ = waterMassKg * CONST.shWater * deltaT;
+
+        UI.panel.style.display = "block";
+
+        if (STATE.mode === "ice") {
+          // Ice cooling model
+          // Assumes bagged/store ice is added near 0 C; home freezer ice (~-18 C) would add ~6-8% more cooling.
+          const energyPerKgIce =
+            CONST.lhIce + CONST.shWater * d.targetC;
+          const iceKg = energyJ / energyPerKgIce;
+
+          const dispW = STATE.metric ? iceKg : iceKg * 2.20462;
+          UI.oIceW.textContent = dispW.toFixed(1);
+
+          let bags = NaN;
+          if (d.bagSize > 0) {
+            bags = Math.ceil(dispW / d.bagSize);
+            UI.oBags.textContent = bags;
+          } else {
+            UI.oBags.textContent = "--";
+          }
+
+          const iceVolL = iceKg / CONST.dIce;
+          const totalVol = d.currL + bodyVolL + iceVolL;
+          checkOverflow(totalVol, d.capL, bodyVolL, iceVolL);
+
+          const ctx = {
+            d,
+            deltaT,
+            energyJ,
+            waterMassKg,
+            bodyVolL,
+            iceKg,
+            energyPerKgIce,
+            dispW,
+            bags,
+          };
+          STATE.lastMode = "ice";
+          STATE.lastCtx = ctx;
+          updateExpertPanel("ice", ctx);
+        } else {
+          // Chiller cooling model
+          const specs = CONST.chillers[d.hp];
+          if (!specs) {
+            showInputError("Unknown chiller size.");
+            UI.panel.style.display = "none";
+            return;
+          }
+
+          // Zero-loss baseline using rated cooling capacity
+          const coolingWatts = specs.btu * CONST.BTU_TO_WATT;
+
+          const sec = energyJ / coolingWatts;
+          const hrs = sec / 3600;
+          const h = Math.floor(hrs);
+          const m = Math.round((hrs - h) * 60);
+          UI.oTime.textContent = `${h}h ${m}m`;
+
+          const kwh = (specs.watts / 1000) * hrs;
+          UI.oCost.textContent = "$" + kwh.toFixed(2);
+          UI.oWatts.textContent = specs.watts.toFixed(0);
+
+          // Maintenance load estimate
+          let sa = 0;
+          const presetData = PRESETS[UI.preset.value];
+          if (presetData && presetData.sa) {
+            sa = presetData.sa;
+          } else {
+            // Empirical surface area approximation for typical tubs/stock tanks
+            // Small vessels: SA ≈ 1.8 + 0.0085 * volumeL
+            // Large vessels: SA ≈ 2.5 + 0.0062 * volumeL
+            sa =
+              d.currL < 300
+                ? 1.8 + 0.0085 * d.currL
+                : 2.5 + 0.0062 * d.currL;
+          }
+
+          const uVal = CONST.uValues[d.insulation] || CONST.uValues.decent;
+          const deltaAmbient = Math.max(0, d.ambC - d.targetC);
+          const heatGainWatts = uVal * sa * deltaAmbient;
+
+          const rawCoolingWatts = specs.btu * CONST.BTU_TO_WATT;
+          const dutyCycle = (heatGainWatts / rawCoolingWatts) * 100;
+
+          const totalVol = d.currL + bodyVolL;
+          checkOverflow(totalVol, d.capL, bodyVolL, 0);
+
+          if (dutyCycle > 100) {
+            UI.msgPower.innerHTML = `Ambient heat gain (~${heatGainWatts.toFixed(0)}W) exceeds chiller capacity. Water will not hold ${d.targetC}°C.`;
+            UI.aPower.classList.remove("hidden");
+          } else if (dutyCycle > 75) {
+            UI.msgPower.innerHTML = `High maintenance load (~${dutyCycle.toFixed(0)}% duty cycle). Chiller will run nearly constantly to hold temp.`;
+            UI.aPower.classList.remove("hidden");
+          } else if (hrs > 24) {
+            UI.msgPower.textContent = "Cooldown takes > 24 hours. Consider a more powerful unit.";
+            UI.aPower.classList.remove("hidden");
+          } else {
+            UI.aPower.classList.add("hidden");
+          }
+
+          const ctx = {
+            d,
+            deltaT,
+            energyJ,
+            waterMassKg,
+            bodyVolL,
+            specs,
+            coolingWatts,
+            hrs,
+            heatGainWatts,
+            dutyCycle,
+            sa,
+          };
+          STATE.lastMode = "chiller";
+          STATE.lastCtx = ctx;
+          updateExpertPanel("chiller", ctx);
+        }
+
+        if (UI.safety) {
+          UI.safety.textContent = buildSafetyMessage(d.targetC);
+        }
+
+        UI.panel.scrollIntoView({ behavior: "smooth" });
+      }
+
+      function updateExpertPanel(mode, ctx) {
+        if (!UI.expertToggle || !UI.expertToggle.checked) {
+          UI.expertPanel.classList.add("hidden");
+          return;
+        }
+
+        const lines = [];
+        const energyMJ = ctx.energyJ / 1e6;
+        const energyKWh = ctx.energyJ / 3.6e6;
+
+        lines.push(
+          `<strong>Water mass used in model:</strong> ${ctx.waterMassKg.toFixed(1)} kg`
+        );
+        lines.push(
+          `<strong>Delta T (start - target):</strong> ${ctx.deltaT.toFixed(2)} C`
+        );
+        lines.push(
+          `<strong>Heat to remove:</strong> ${ctx.energyJ.toFixed(0)} J / ${energyMJ.toFixed(3)} MJ / ${energyKWh.toFixed(3)} kWh`
+        );
+        lines.push(
+          `<strong>Submerged body volume:</strong> ${ctx.bodyVolL.toFixed(1)} L (from density band + immersion fraction)`
+        );
+
+        if (mode === "ice") {
+          const iceKg = ctx.iceKg;
+          const iceMassDisplay = STATE.metric ? iceKg : iceKg * 2.20462;
+          const unit = STATE.metric ? "kg" : "lb";
+          lines.push(
+            `<strong>Ice energy per ${unit}:</strong> ${(ctx.energyPerKgIce / (STATE.metric ? 1 : 2.20462)).toFixed(0)} J / ${unit} (latent + warming to target)`
+          );
+          lines.push(
+            `<strong>Ice mass estimate:</strong> ${iceMassDisplay.toFixed(2)} ${unit}`
+          );
+          if (Number.isFinite(ctx.bags)) {
+            lines.push(
+              `<strong>Bag count (from inputs):</strong> ${ctx.bags} bag(s)`
+            );
+          }
+        } else if (mode === "chiller") {
+          const specs = ctx.specs;
+          const coolingKWh = ctx.coolingWatts * ctx.hrs / 1000;
+          const cop = specs.watts > 0 ? (ctx.coolingWatts / specs.watts).toFixed(2) : "-";
+          lines.push(
+            `<strong>Chiller rating:</strong> ${specs.btu.toFixed(0)} BTU/hr, ${specs.watts.toFixed(0)} W input`
+          );
+          lines.push(
+            `<strong>Effective cooling power (cooldown):</strong> ${ctx.coolingWatts.toFixed(0)} W (rated)`
+          );
+          lines.push(
+            `<strong>Estimated cooldown:</strong> ${ctx.hrs.toFixed(2)} h (ideal)`
+          );
+          lines.push(
+            `<strong>Passive heat gain (at target):</strong> ${ctx.heatGainWatts.toFixed(0)} W`
+          );
+          lines.push(
+            `<strong>Est. duty cycle:</strong> ${ctx.dutyCycle.toFixed(0)}% (load / rated capacity)`
+          );
+          const dailyKWh = (specs.watts / 1000) * 24 * (ctx.dutyCycle / 100);
+          const dailyCost = dailyKWh * ctx.d.kwhCost;
+          lines.push(
+            `<strong>Estimated holding cost:</strong> ~$${dailyCost.toFixed(2)}/day`
+          );
+          lines.push(
+            `<strong>Est. wetted surface area:</strong> ${ctx.sa.toFixed(2)} m^2`
+          );
+          lines.push(
+            `<strong>Ambient temp used:</strong> ${ctx.d.ambC.toFixed(1)} C`
+          );
+
+          if (ctx.dutyCycle > 100) {
+            lines.push(
+              `<strong style="color:var(--danger)">FAIL: Heat gain exceeds cooling capacity</strong>`
+            );
+          }
+
+          lines.push(
+            `<strong>Cooling work over run time:</strong> ${coolingKWh.toFixed(3)} kWh equivalent`
+          );
+          lines.push(
+            `<strong>Approximate COP (cooling W / electrical W):</strong> ${cop}`
+          );
+        }
+
+        UI.expertContent.innerHTML = lines.join("<br>");
+        UI.expertPanel.classList.remove("hidden");
+      }
+      function checkOverflow(totalL, capL, bodyL, iceL) {
+        if (!Number.isFinite(capL) || capL <= 0) {
+          UI.aOverflow.classList.add("hidden");
+          return;
+        }
+
+        if (totalL > capL) {
+          const overL = totalL - capL;
+          const overDisp = STATE.metric
+            ? overL
+            : overL / CONST.galToL;
+          const unit = STATE.metric ? "L" : "gal";
+
+          const maxWaterL = capL - bodyL - iceL;
+          const maxDisp = STATE.metric
+            ? maxWaterL
+            : maxWaterL / CONST.galToL;
+
+          UI.msgOverflow.innerHTML = `
+            Your planned water + submerged body${
+              iceL > 0 ? " + ice" : ""
+            } exceeds capacity by <strong>${overDisp.toFixed(
+            1
+          )} ${unit}</strong>.<br>
+            To avoid overflow, fill to at most <strong>${maxDisp.toFixed(
+              1
+            )} ${unit}</strong> before getting in.
+          `;
+          UI.aOverflow.classList.remove("hidden");
+        } else {
+          UI.aOverflow.classList.add("hidden");
+        }
+      }
+      function getNormalizedData() {
+        const v = (id) =>
+          parseFloat(document.getElementById(id).value);
+
+        const raw = {
+          cap: v("tank-cap"),
+          curr: v("curr-water"),
+          start: v("temp-start"),
+          target: v("temp-target"),
+          amb: v("temp-ambient"),
+          weight: v("weight"),
+          bag: v("bag-size"),
+          hp: document.getElementById("hp").value,
+          bodyType: document.getElementById("body-type").value,
+          immersion: v("immersion"),
+          insulation: document.getElementById("insulation").value,
+          kwhCost: v("cost-kwh"),
+        };
+
+        if (
+          [raw.curr, raw.weight, raw.start, raw.target].some(
+            (x) => isNaN(x)
+          )
+        ) {
+          return null;
+        }
+        if (raw.curr <= 0 || raw.weight <= 0) {
+          return null;
+        }
+
+        const toL = (x) => x * CONST.galToL;
+        const toKg = (x) => x * CONST.lbsToKg;
+        const toC = (x) => ((x - 32) * 5) / 9;
+
+        const capL = isNaN(raw.cap)
+          ? NaN
+          : STATE.metric
+          ? raw.cap
+          : toL(raw.cap);
+
+        return {
+          capL,
+          currL: STATE.metric ? raw.curr : toL(raw.curr),
+          startC: STATE.metric ? raw.start : toC(raw.start),
+          targetC: STATE.metric ? raw.target : toC(raw.target),
+          ambC: isNaN(raw.amb) ? 22 : STATE.metric ? raw.amb : toC(raw.amb),
+          weightKg: STATE.metric ? raw.weight : toKg(raw.weight),
+          bagSize: raw.bag,
+          hp: raw.hp,
+          bodyType: raw.bodyType,
+          immersion: isNaN(raw.immersion)
+            ? 0.75
+            : Math.min(Math.max(raw.immersion, 0.1), 1),
+          insulation: raw.insulation,
+          kwhCost: isNaN(raw.kwhCost) ? 0 : raw.kwhCost,
+        };
+      }
+
+      function convertInputs() {
+        const flip = (id, factor) => {
+          const el = document.getElementById(id);
+          if (!el.value) return;
+          const v = parseFloat(el.value);
+          if (isNaN(v)) return;
+          el.value = (
+            STATE.metric ? v * factor : v / factor
+          ).toFixed(1);
+        };
+
+        flip("tank-cap", CONST.galToL);
+        flip("curr-water", CONST.galToL);
+        flip("weight", CONST.lbsToKg);
+        flip("bag-size", CONST.lbsToKg);
+
+        const flipT = (id) => {
+          const el = document.getElementById(id);
+          if (!el.value) return;
+          const v = parseFloat(el.value);
+          if (isNaN(v)) return;
+          el.value = STATE.metric
+            ? ((v - 32) * 5) / 9
+            : (v * 9) / 5 + 32;
+          el.value = parseFloat(el.value).toFixed(1);
+        };
+
+        flipT("temp-start");
+        flipT("temp-target");
+        flipT("temp-ambient");
+      }
+
+      init();
+    </script>
+  </body>
+</html>
+
+
+
+
