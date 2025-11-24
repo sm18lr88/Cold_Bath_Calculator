@@ -9,6 +9,9 @@ Advanced tool for estimating ice or chiller requirements for your cold bath.
 
 <img width="400" height="737" alt="image" src="https://github.com/user-attachments/assets/6c152cb0-02c6-4e92-8212-ed4b4ccb1648" />
 
+<img width="400" height="634" alt="image" src="https://github.com/user-attachments/assets/e7ed87a1-6cc6-475b-9b45-c7a5fa26c631" />
+
+
 ## Quick start
 
 - Open `cold_bath_calculator.html` in any modern browser.
