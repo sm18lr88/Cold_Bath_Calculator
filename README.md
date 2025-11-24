@@ -55,4 +55,4 @@ Advanced tool for estimating ice or chiller requirements for your cold bath.
 
 ## LICENSE
 
-UNIVERSAL PERMISSIVE LICENSE
+UPL
