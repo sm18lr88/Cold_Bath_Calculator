@@ -1,6 +1,6 @@
 # Cold Bath Calculator
 
-Advanced tool for estimating ice or chiller requirements for your cold bath. 
+Fun tool for estimating ice or chiller requirements for your cold bath. 
 
 - How many bags of ice will you need? 
 - Or, what chiller unit should you buy? 
