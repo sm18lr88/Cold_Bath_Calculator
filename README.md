@@ -1,10 +1,10 @@
 # Cold Bath Calculator
 
-Fun tool for estimating ice or chiller requirements for your cold bath. 
+A fun tool for estimating the ice or chiller you need for your cold bath. It answers these questions:
 
-- How many bags of ice will you need? 
-- Or, what chiller unit should you buy? 
-- How much should you fill the tub? 
+- How many bags of ice will you need?
+- Or, what chiller unit should you buy?
+- How much should you fill the tub?
 
 <img width="400" height="740" alt="image" src="https://github.com/user-attachments/assets/9a8f5402-f7e3-4689-b179-42a63aa7ce78" />
 
@@ -35,13 +35,16 @@ Fun tool for estimating ice or chiller requirements for your cold bath.
 
 ## Testing the physics model
 
-- Requires Node.js (no dependencies).
-- Run: `node physics-tests.js`
-- The suite covers:
-  - Unit conversions.
-  - Ice scenarios: typical, large delta, and mild delta (energy, mass, volume).
-  - Chiller scenarios: baseline cooling and passive heat gain (maintenance load) checks.
-  - Body displacement calculation.
+You need Node.js (no dependencies). Run:
+
+`node physics-tests.js`
+
+The suite covers:
+
+- Unit conversions.
+- Ice scenarios: typical, large delta, and mild delta (energy, mass, volume).
+- Chiller scenarios: baseline cooling and passive heat gain (maintenance load) checks.
+- Body displacement calculation.
 
 ## Notes and assumptions
 
